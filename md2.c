@@ -4,6 +4,7 @@
 #include <math.h>
 
 #define BLOCK_SIZE 16
+#define BUFFER_SIZE 4096
 
 static unsigned char PI_SUBST[256] = {
   41, 46, 67, 201, 162, 216, 124, 1, 61, 54, 84, 161, 236, 240, 6,
@@ -27,12 +28,12 @@ static unsigned char PI_SUBST[256] = {
 };
 
 /*
- * Performs md2 hash on str and puts result in result
+ * Performs md2 hash on str and saves hash in result
  *
  * params:
-    * unsigned char *str - string to be hashed
-    * int str_length - strlen(str)
-    * unsigned char *result - >= 16 byte array where hash is placed as a return value
+ *    unsigned char *str - string to be hashed
+ *    int str_length - strlen(str)
+ *    unsigned char *result - >= 16 byte array where hash is placed as a return value in first 16 bytes. No null terminator is included
 */
 void md2_hash(unsigned char *str, int str_length, unsigned char *result) {
     // padding
@@ -85,19 +86,50 @@ void md2_hash(unsigned char *str, int str_length, unsigned char *result) {
     free(msg);
 }
 
-int main(int argc, char *argv[]) {
-    if (argc != 2) {
-        fprintf(stderr, "Usage: %s <string>\n", argv[0]);
-        return 1;
-    }
-
-    unsigned char *str = argv[1];
-    unsigned char *result = malloc(16);
-    md2_hash(str, strlen(str), result);
+void print_hash(unsigned char *hash) {
     for (int i = 0; i < BLOCK_SIZE; i++)
-        printf("%02x", result[i]);
-    putc('\n', stdout);
-    
-    free(result);
+        printf("%02x", hash[i]);
+    putc('\n', stdout);    
+}
+
+int main(int argc, char *argv[]) {
+    unsigned char *str;
+    size_t input_length = 0;
+    int free_input_flag = 0;
+    if (argc == 2) {
+        str = argv[1];
+        input_length = strlen(str);
+    } else {
+        // Read from stdin
+        size_t buffer_size = BUFFER_SIZE;
+        str = malloc(buffer_size);
+        if (str == NULL) {
+            fprintf(stderr, "Memory allocation failed\n");
+            return 1;
+        }
+        free_input_flag = 1;
+
+        int c;
+        while ((c = getchar()) != EOF) {
+            if (input_length >= buffer_size - 1) {
+                buffer_size *= 2;
+                str = realloc(str, buffer_size);
+                if (str == NULL) {
+                    fprintf(stderr, "Memory allocation failed\n");
+                    return 1;
+                }
+            }
+            str[input_length++] = c;
+        }
+        str[input_length] = '\0';
+    }
+    // printf("input: %s\n", str);
+
+    unsigned char result[16];
+    md2_hash(str, strlen(str), result);
+    print_hash(result);
+
+    if (free_input_flag)
+        free(str);
     return 0;
 }
