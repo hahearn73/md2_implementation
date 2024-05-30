@@ -98,5 +98,6 @@ int main(int argc, char *argv[]) {
         printf("%02x", result[i]);
     putc('\n', stdout);
     
+    free(result);
     return 0;
 }
