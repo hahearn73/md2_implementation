@@ -86,7 +86,7 @@ void md2_hash(unsigned char *str, int str_length, unsigned char *result) {
     free(msg);
 }
 
-void print_hash(unsigned char *hash) {
+extern inline void print_hash(unsigned char *hash) {
     for (int i = 0; i < BLOCK_SIZE; i++)
         printf("%02x", hash[i]);
     putc('\n', stdout);    
