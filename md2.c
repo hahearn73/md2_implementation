@@ -95,7 +95,8 @@ void print_hash(unsigned char *hash) {
 int main(int argc, char *argv[]) {
     unsigned char *str;
     size_t input_length = 0;
-    int free_input_flag = 0;
+    int free_str_flag = 0;
+
     if (argc == 2) {
         str = argv[1];
         input_length = strlen(str);
@@ -107,7 +108,7 @@ int main(int argc, char *argv[]) {
             fprintf(stderr, "Memory allocation failed\n");
             return 1;
         }
-        free_input_flag = 1;
+        free_str_flag = 1;
 
         int c;
         while ((c = getchar()) != EOF) {
@@ -123,13 +124,12 @@ int main(int argc, char *argv[]) {
         }
         str[input_length] = '\0';
     }
-    // printf("input: %s\n", str);
 
     unsigned char result[16];
-    md2_hash(str, strlen(str), result);
+    md2_hash(str, input_length, result);
     print_hash(result);
 
-    if (free_input_flag)
+    if (free_str_flag)
         free(str);
     return 0;
 }
